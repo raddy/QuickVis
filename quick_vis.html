@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1">
+		<link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css">
+		<title>Quick Vis</title>
+		<style>
+			body
+			{
+				background-color: #1c1c1c;
+				font-family: sans-serif;
+				color: #fff;
+				padding-top: 40px;
+			}
+			.axis text
+			{
+				fill: #fff;
+			}
+			.axis .domain
+			{
+				opacity: 0;
+			}
+			.tick
+			{
+				stroke: #fff;
+			}
+		</style>
+
+		
+	</head>
+	<body>
+		<div class="topbar">
+			<div class="topbar-inner">
+				<div class="container">
+					<a class="brand">Quick Vis</a>
+				</div>
+			</div>
+		</div>
+		<div class="fill">
+				<div class="row">
+					<div class="span3">
+						<div id="controls"></div>
+					</div>
+					<div class="span13">
+						<svg id="quickvis" width="760" height="600"></svg>
+					</div>
+				</div>
+		</div>
+	</body>
+	<script src="d3/d3.js"></script>
+	<script src="d3/d3.csv.js"></script>
+	<script src="quick_visualizer.js"></script>
+</html>
