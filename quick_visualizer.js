@@ -63,6 +63,7 @@ if (typeof d3.radikal != "object") d3.radikal = {};
 	        if (!arguments.length) return data;
 	        data = d;
 			keys = Object.keys(data[0]);
+			keys.push("constant");
 			prepData(data);
 	        return this.redraw();
 	    };
@@ -131,17 +132,20 @@ if (typeof d3.radikal != "object") d3.radikal = {};
 			]);
 			
 			//3rd dimension is SIZE (twss)
-			rRange.domain([
-				d3.min(data, function (d) { return +d[axes.radiusAxis]; }),
-				d3.max(data, function (d) { return +d[axes.radiusAxis]; })
-			]);
-			
+			if (axes.radiusAxis!="constant"){
+				rRange.domain([
+					d3.min(data, function (d) { return +d[axes.radiusAxis]; }),
+					d3.max(data, function (d) { return +d[axes.radiusAxis]; })
+				]);
+			}
+
 			//4th dimension is color (twss?)
-			cRange.domain([
-				d3.min(data, function (d) { return +d[axes.colorAxis]; }),
-				d3.max(data, function (d) { return +d[axes.colorAxis]; })
-			]);
-			
+			if (axes.radiusAxis!="constant"){
+				cRange.domain([
+					d3.min(data, function (d) { return +d[axes.colorAxis]; }),
+					d3.max(data, function (d) { return +d[axes.colorAxis]; })
+				]);
+			}
 			
 			var tranny = target.transition().duration(duration).ease("exp-in-out");
 		    tranny.select(".x.axis").call(xAxis);
@@ -152,14 +156,15 @@ if (typeof d3.radikal != "object") d3.radikal = {};
 					.attr("cx", function (d) { return xRange (d[axes.xAxis]); })
 					.attr("cy", function (d) { return yRange (d[axes.yAxis]); })
 					.style("opacity", 0)
-					.style("fill", function (d) { return colours[cRange(d[axes.colorAxis])]; });
+					.style("fill", function (d) { return (axes.colorAxis!="constant") ? colours[cRange(d[axes.colorAxis])] : "FFF7FB" ; });
 					
 			
 			data_points.transition().duration(duration).ease("exp-in-out")
 				.style("opacity", .75)
-				.style("fill", function (d) { 
-					return colours[cRange(d[axes.colorAxis])];})
-				.attr("r", function(d) { return rRange (d[axes.radiusAxis]); })
+				.style("fill", function (d) {
+					console.log(axes.colorAxis); 
+					return (axes.colorAxis!="constant") ? colours[cRange(d[axes.colorAxis])] : "FFF7FB" ; })
+				.attr("r", function(d) { return (axes.radiusAxis!="constant") ? rRange (d[axes.radiusAxis]) : 2; })
 				.attr("cx", function (d) { return xRange (d[axes.xAxis]); })
 				.attr("cy", function (d) { return yRange (d[axes.yAxis]); });
 				
@@ -200,6 +205,9 @@ function buildAxisSelectors(keyz){
         .property("selected", function(d, i) { return i == 1; })
         .attr("value", function(d){return d.value;})
         .text(function(d,i) { return keyz[i]; });
+
+	keyz.push("constant");
+	
 //r-axis
 	controls.append("div").attr("class","r-axis-label").text("Size")
 		.append("select").attr("class","r-axis span3").on("change",update).selectAll("option")
