@@ -160,7 +160,7 @@ if (typeof d3.radikal != "object") d3.radikal = {};
 					
 			
 			data_points.transition().duration(duration).ease("exp-in-out")
-				.style("opacity", .75)
+				.style("opacity", .65)
 				.style("fill", function (d) {
 					console.log(axes.colorAxis); 
 					return (axes.colorAxis!="constant") ? colours[cRange(d[axes.colorAxis])] : "FFF7FB" ; })
@@ -226,15 +226,23 @@ function buildAxisSelectors(keyz){
         .text(function(d,i) { return keyz[i]; });	
 }
 
-source = "iris2.csv";
+source = "iris.json";
 function init () {
 		vis = d3.radikal.quickvis().target("#quickvis");
-		
-		d3.csv(source, function(data) {
-			buildAxisSelectors(d3.keys(data[0]));
-			vis.data(data);
-		   	vis.label(source);
-		});
+		if (new RegExp(".csv"+"$").test(source)){
+			d3.csv(source, function(data) {
+				buildAxisSelectors(d3.keys(data[0]));
+				vis.data(data);
+			   	vis.label(source);
+			});
+		}
+		else if (new RegExp(".json"+"$").test(source)){
+			d3.json(source, function(data) {
+				buildAxisSelectors(d3.keys(data[0]));
+				vis.data(data);
+			   	vis.label(source);
+			});
+		}
 }
 
 function update(keyz){
