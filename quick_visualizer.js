@@ -38,12 +38,12 @@ d3.radikal.quickvis = function (){
 			brush,
 		    chartW, chartH,
 			first_color=1,last_color=9,
-			xRange = d3.scale.linear().range([margin.left, w - margin.right]),
-			yRange = d3.scale.linear().range([h - margin.top, margin.bottom]),
+			xRange,
+			yRange,
 			rRange,
 			cRange = d3.scale.quantize().range(d3.range(8)),
-			xAxis = d3.svg.axis().scale(xRange).tickSize(16).tickSubdivide(true),
-			yAxis = d3.svg.axis().scale(yRange).tickSize(10).orient("right").tickSubdivide(true),
+			xAxis,
+			yAxis,
 			dimensions=[],start,end,zoomlevel=1,
 		    keys,
 			filters=Array();
@@ -67,12 +67,12 @@ d3.radikal.quickvis = function (){
 		        y = 0;
 				target.append("svg:g")
 					.attr("class", "x axis")
-					.attr("transform", "translate(0," + h + ")")
-					.call(xAxis);
+					.attr("transform", "translate(0," + h + ")");
+				//	.call(xAxis);
 
 				target.append("svg:g")
-					.attr("class", "y axis")
-					.call(yAxis);
+					.attr("class", "y axis");
+				//	.call(yAxis);
 		        return quickvis;
 		    };
 		
@@ -102,7 +102,6 @@ d3.radikal.quickvis = function (){
 			
 			d3.keys(data[0]).forEach(function(k){
 				fz.push(gui.addFolder(k));
-				console.log("whatwhat");
 				var philter = new d3.radikal.filter();				
 				if (!isNaN(+data[0][k])){
 					philter.max = d3.max(data,function(d){ return +d[k];});
@@ -118,7 +117,6 @@ d3.radikal.quickvis = function (){
 				}
 				i++;
 			});
-			console.log(filters);
 			return gui;
 		}
 		
@@ -230,7 +228,7 @@ d3.radikal.quickvis = function (){
 				var flag = true;
 				for (var i=0;i<filters.length;i++){
 					if (filters[i].eq == "NUMERIC_FILTER"){
-						console.log(+visdata[j][keys[i]],filters[i].min,+visdata[j][keys[i]],filters[i].max);
+						
 						if ((+visdata[j][keys[i]]<filters[i].min)||(+visdata[j][keys[i]]>filters[i].max))
 							flag = false;
 					}
@@ -243,7 +241,7 @@ d3.radikal.quickvis = function (){
 		}
 		
 		quickvis.visdata = function(xaxe){
-			console.log(start,end);
+
 			if ((start==undefined)||(end==undefined))
 				visdata = data;
 			else{
@@ -256,22 +254,40 @@ d3.radikal.quickvis = function (){
 			return visdata;
 		}
 		
+		quickvis.xrange = function(){
+			return xRange;
+		}
 		quickvis.redraw = function(){
 
 			var data_points = target.selectAll("circle").data(this.applyFilters(this.visdata(this.x_axe)));
 			//Always need at least X and Y (no histograms or ts yet NERD)
 			var thus = this;
-			xRange.domain([
-				d3.min(visdata, function (d) { 
-					return (+d[thus.x_axe]); }),
-				d3.max(visdata, function (d) { 
-					return +d[thus.x_axe]; })
-			]);
-			yRange.domain([
-				d3.min(visdata, function (d) { return +d[thus.y_axe]; }),
-				d3.max(visdata, function (d) { return +d[thus.y_axe]; })
-			]);
-
+			
+			if (!isNaN(+visdata[0][thus.x_axe])){
+				xRange = d3.scale.linear().range([margin.left, w - margin.right])
+				xRange.domain([
+					d3.min(visdata, function (d) { 
+						return (+d[thus.x_axe]); }),
+					d3.max(visdata, function (d) { 
+						return +d[thus.x_axe]; })
+				]);
+			}
+			else{
+				var uniq_stuff = _.uniq(_.pluck(visdata,thus.x_axe));
+				console.log(uniq_stuff)
+				xRange = d3.scale.ordinal().domain(uniq_stuff).rangePoints([margin.left, w - margin.right,]);
+			}
+			if (!isNaN(+visdata[0][thus.y_axe])){
+				yRange = d3.scale.linear().range([h - margin.top, margin.bottom]);
+				yRange.domain([
+					d3.min(visdata, function (d) { return +d[thus.y_axe]; }),
+					d3.max(visdata, function (d) { return +d[thus.y_axe]; })
+				]);
+			}
+			else{
+				var uniq_stuff = _.uniq(_.pluck(visdata,thus.y_axe));
+				yRange = d3.scale.ordinal().domain(uniq_stuff).rangePoints([h - margin.top, margin.bottom]);
+			}
 			//3rd dimension is SIZE (twss)
 			rRange=d3.scale.linear().range([this.small_point, this.big_point]);
 			if (this.r_axe!="constant"){
@@ -288,6 +304,8 @@ d3.radikal.quickvis = function (){
 					d3.max(data, function (d) { return +d[thus.c_axe]; })
 				]);
 			}
+			xAxis=d3.svg.axis().scale(xRange).tickSize(16).tickSubdivide(true)
+			yAxis=d3.svg.axis().scale(yRange).tickSize(10).orient("right").tickSubdivide(true);
 			var tranny = target.transition().duration(this.duration).ease("exp-in-out");
 		    tranny.select(".x.axis").call(xAxis);
 		    tranny.select(".y.axis").call(yAxis);
@@ -331,7 +349,6 @@ d3.radikal.quickvis = function (){
 				start = dom[0]+(dom[1]-dom[0])*c/4;
 				end = start + (dom[1]-dom[0])/4;
 				zoomlevel=2;
-				console.log(start,end);
 			}
 			else if (r==2){
 				xRange.domain([
@@ -426,7 +443,7 @@ function buildFilterPanel(gui,r1){
 	return f;
 }
 
-source = "iris.csv";
+source = "2012_01_17_summary.csv";
 function init () {
 		/*vis = d3.radikal.bigscatter().target("#quickvis");
 		d3.csv(source,function(data){
@@ -443,7 +460,8 @@ function init () {
 			vis.redraw();
 		});*/
 		vis = d3.radikal.quickvis().target("#quickvis");
-		var gui = new dat.GUI();
+		var gui = new dat.GUI({hideable: false ,width:260});
+		//document.getElementById('gui_controls').appendChild(gui.domElement);
 		//var filter_gui = new dat.GUI();
 		var fx = gui.addFolder("FX");
 		fx.add(vis,'duration');
@@ -457,7 +475,8 @@ function init () {
 				//buildAxisSelectors(d3.keys(data[0]));
 
 				vis.data(data);
-				var filter_gui = vis.filterz(new dat.GUI());
+				var filter_gui = vis.filterz(new dat.GUI({autoPlace: false }));
+				document.getElementById('filter_controls').appendChild(filter_gui.domElement);
 			   	vis.label(source);
 				
 				var xhandler = axiss.add(vis,'x_axe',vis.keys());
