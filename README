@@ -1,9 +1,5 @@
-Fast 'sanity-check' visualizations
+Fast 'sanity-check' visualizations using D3 and dat.GUI (for controls)
 
-2-N columns
+Very very WIP
 
-To come:
 
-JSON support
-Path plots as well scatter
-Interactivity
